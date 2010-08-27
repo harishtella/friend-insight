@@ -1,0 +1,221 @@
+<fb:fbml>
+	<script>
+		
+		// written by Harish Tella on 02/10/10
+		// free to modify and share but please credit authors  
+		
+		// some code based on written by "Nathaniel" 
+		// http://forum.developers.facebook.com/viewtopic.php?id=30672
+
+		// NOTE: any 'id' in function perameters are the ids of the
+		// html select tags
+
+		// added some fake uid->name pairs
+		// use your own way to fill 'friend_names' with uid->name pairs 
+		// php client or js client or whatever
+		var friends_names = {} ;
+		friends_names[23123414] = "Some Guy" ;
+		friends_names[31234124] = "Jim Somebody" ;
+		friends_names[11234134] = "Al Nobody" ;
+		friends_names[123414] = "Zach Nowhere" ;
+		friends_names[1234093] = "Racheal Person" ;
+		friends_names[211303382] = "Steve Cran" ;
+		friends_names[862945510] = "Geord Benny" ;
+		friends_names[566298609] = "Kevenry Barry" ;
+		friends_names[542401091] = "Henry Alex" ;
+		friends_names[767891593] = "Ray Tomas" ;
+		friends_names[268300473] = "Mardo Frey" ;
+		friends_names[26923876] = "Larry Gard" ;
+		friends_names[292459616] = "Bris Rod" ;
+		friends_names[199508944] = "Eris Jay" ;
+		friends_names[178936978] = "Jonatt Jam" ;
+		friends_names[568408868] = "Goren Hark" ;
+		friends_names[490084432] = "Jay Sterry" ;
+		
+
+		// populates 'friends_names' into select box and alphabetizes 
+		function setup_names_options(id){
+			for (var uid in friends_names) {
+				add_option_bot(id, uid, friends_names[uid]); 
+			}
+			sort_options_alpha(id);
+		}
+
+		// clears left and right select box and calls 'setup_names_options'
+		function reset_names_options(id_left, id_right){
+			var options_left = 
+			document.getElementById(id_left).getElementsByTagName('option');
+			var options_right = 
+			document.getElementById(id_right).getElementsByTagName('option');
+			
+			for(var i=0; i < options_left.length; i++) {
+				options_left[i].getParentNode().removeChild(options_left[i]);
+			}
+			for(var i=0; i < options_right.length; i++) {
+				options_right[i].getParentNode().removeChild(options_right[i]);
+			}
+			setup_names_options(id_left);
+		}
+
+		// add option to bottom of select box
+		function add_option_bot(id, value, text, selected) {
+			if (typeof selected == "undefined") {
+				selected = false;
+			}
+
+			var select = document.getElementById(id);
+			var option = document.createElement('option');
+			option.setValue(value).setTextValue(text);
+			option.setSelected(selected);
+			select.appendChild(option);
+		}
+
+		// add option to top of select box
+		function add_option_top(id, value, text, selected) {
+			if (typeof selected == "undefined") {
+				selected = false;
+			}
+			
+			var select = document.getElementById(id);
+			var first_option = select.getElementsByTagName('option')[0];
+			var new_option = document.createElement('option');
+			new_option.setValue(value).setTextValue(text);
+			new_option.setSelected(selected);
+			select.insertBefore(new_option, first_option);
+		}
+
+		// sort options alphabetically
+		function sort_options_alpha(id) {
+			var select = document.getElementById(id);
+			var select_options = select.getElementsByTagName('option');
+			var opts = [];
+
+			for(var i = 0; i < select_options.length; i++) {
+				var cur_id = select_options[i].getValue();  
+				var cur_name = friends_names[cur_id];
+				var	cur_selected = select_options[i].getSelected();  
+
+				opts.push({id: cur_id, name: cur_name, selected: cur_selected}); 
+				select_options[i].getParentNode().removeChild(select_options[i]);
+			}
+
+			opts.sort(function (x,y) {return x.name > y.name;});
+
+			for(var i = 0; i < opts.length; i++) {
+				add_option_bot(id, opts[i].id,
+				opts[i].name, opts[i].selected);
+			}
+		}
+
+		// unselect everything 
+		function unselect_all(id) {
+			var select = document.getElementById(id);
+			var select_options = select.getElementsByTagName('option');
+			for(var i = 0; i < select_options.length; i++) {
+				select_options[i].setSelected(false); 
+			}
+		}
+
+		// remove a single option
+		function remove_option(id, value) {
+			var options = document.getElementById(id).getElementsByTagName('option');
+			for(var i = 0; i < options.length; i++) {
+				if(options[i].getValue() == value) {
+					options[i].getParentNode().removeChild(options[i]);
+					break;
+				}
+			}
+		}
+
+		// move a random selection of options 
+		// num_options: number of options to be moved
+		// doesn't check whether that many are available to move
+		function move_random(select_from_id, select_to_id, num_options)
+		{
+			select_from = document.getElementById(select_from_id);
+			select_to = document.getElementById(select_to_id);
+			
+			for(var i = 0; i < num_options; i++) {
+				var avail_opt = select_from.getElementsByTagName('option');
+
+				var rand_opt_index = Math.floor(Math.random()*avail_opt.length);	
+				var opt_uid = avail_opt[rand_opt_index].getValue();
+
+				remove_option(select_from_id, opt_uid);
+				add_option_bot(select_to_id, opt_uid, friends_names[opt_uid]);
+			}
+			sort_options_alpha(select_to_id);
+		}
+
+		// move selected options 
+		function move_selected(select_from_id, select_to_id)
+		{
+			select_from = document.getElementById(select_from_id);
+			select_to = document.getElementById(select_to_id);
+			unselect_all(select_to_id);	
+
+			var select_from_opts = select_from.getElementsByTagName('option');
+			var opts_selected_ids = [];
+			var opts_count = 0;
+
+			// Find the selected Options in reverse order
+			// and delete them from the 'from' Select.
+			for(var i=select_from_opts.length-1; i>=0; i--)
+			{
+				if(select_from_opts[i].getSelected())
+				{
+					opts_selected_ids[opts_count] =
+						select_from_opts[i].getValue();
+					remove_option(select_from_id, opts_selected_ids[opts_count]);
+					opts_count++;
+				}
+			}
+
+			// Add the selected text/values in reverse order.
+			// This will add the Options to the 'to' Select
+			// in the same order as they were in the 'from' Select.
+			for(i=opts_count-1; i>=0; i--)
+			{
+				add_option_bot(select_to_id, opts_selected_ids[i],
+				friends_names[opts_selected_ids[i]], true);
+			}
+			sort_options_alpha(select_to_id);
+		}
+
+		// setup everything up 
+		setup_names_options("left_sel");
+	</script>
+
+	<div style='margin: 0.1em 1em 1em;'>
+		<a href="#" onclick="reset_names_options('left_sel', 'right_sel'); return false;"
+		>* reset</a>
+		<br/>
+		<a href="#" onclick="move_random('left_sel', 'right_sel', 2); return false;"
+		>* move 2 at random</a>
+		<br/>
+		<br/>
+
+		<table border="0">
+			<tr>
+				<td>
+					<select name="left_sel" id="left_sel" style="width: 150px;"
+					size="25" multiple="multiple">
+					</select>
+				</td>
+				<td align="center" valign="middle">
+					<input type="button" value="--&gt;"
+					 onclick="move_selected('left_sel', 'right_sel');" /><br />
+					<input type="button" value="&lt;--"
+					 onclick="move_selected('right_sel', 'left_sel');" />
+				</td>
+				<td>
+					<select name="right_sel" id="right_sel" style="width:
+					150px;" size="25" multiple="multiple">
+					</select>
+				</td>
+			</tr>
+		</table>
+	</div>
+</fb:fbml> 
+
+
