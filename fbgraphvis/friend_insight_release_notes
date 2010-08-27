@@ -1,0 +1,15 @@
+
+friend insight release notes
+
+compile bchierarchy code in bchierarchy/
+
+chmod 777 the following dirs so server can write to them:
+output_json/ 
+output_friendships/
+php/sessions/
+
+remove the following dirs to prevent code from being on server:
+flash/FriendInsight
+bchierarchy/  (everything in here except the main executable)
+
+
